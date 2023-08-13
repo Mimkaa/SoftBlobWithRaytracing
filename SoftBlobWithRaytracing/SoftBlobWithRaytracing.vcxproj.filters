@@ -22,9 +22,18 @@
     <Filter Include="Source Files\Bindables">
       <UniqueIdentifier>{0c684d8a-b63c-4c5a-ab59-a5d0737937e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Shapes">
+      <UniqueIdentifier>{bc3043f3-ce5a-4fd7-8fae-bdccf45db4d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawable.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -67,8 +76,17 @@
     <ClInclude Include="ConstantBuffer.h">
       <Filter>Header Files\Bindables</Filter>
     </ClInclude>
-    <ClInclude Include="Drawable.h">
+    <ClInclude Include="Globals.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawer.h">
+      <Filter>Header Files\Bindables</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>Header Files\Shapes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

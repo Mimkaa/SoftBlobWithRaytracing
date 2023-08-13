@@ -2,27 +2,28 @@
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 600
 
+
+
 #include <windows.h>
 #include <windowsx.h>
 #include <d3d11.h>
 #include <d3dx11.h>
 #include "DirectXMath.h"
 #include "DirectXPackedVector.h"
+#include "Globals.h"
 #include <string>
 #include "HelperFunctions.h"
 #include "Graphics.h"
 #include "BIndablesHeader.h"
 #include "Drawable.h"
+#include "App.h"
 
-
-
-using namespace DirectX;
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dx11.lib")
 
-XMMATRIX GetModelTansformation(float angle);
+
 
 // the WindowProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd,
@@ -76,10 +77,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
     // this struct holds Windows event messages
     MSG msg;
 
-    float angle = 0.0f;
-    Graphics gfx{hWnd, SCREEN_WIDTH, SCREEN_HEIGHT};
-
-    Cube cube{ gfx };
+    std::unique_ptr<App> pApp = std::make_unique<App>(hWnd, SCREEN_WIDTH, SCREEN_HEIGHT);
+    
     // wait for the next message in the queue, store the result in 'msg'
     while (TRUE)
     {
@@ -91,33 +90,15 @@ int WINAPI WinMain(HINSTANCE hInstance,
             // send the message to the WindowProc function
             DispatchMessage(&msg);
         }
-        // send transformations on the GPU side
-
-        XMMATRIX translate = XMMatrixTranslation(0.0f, 0.0f, 4.5f);
-        XMMATRIX model = XMMatrixMultiply(GetModelTansformation(angle), translate);
-        XMFLOAT4X4 storedTranModel;
-        XMFLOAT4X4 storedProjection;
-        // projection 
-        //////////////
-        XMMATRIX projection = XMMatrixPerspectiveFovLH(1.5f, 4 / 3, 0.1f, 1000);
-
-        XMStoreFloat4x4(&storedTranModel, XMMatrixTranspose(model));
-        XMStoreFloat4x4(&storedProjection, XMMatrixTranspose(projection));
-
-        cube.UpdateMatrix(gfx, storedTranModel, storedProjection);
-        // render a frame
-        const float colorBack[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-        gfx.ClearScreen(colorBack);
-        cube.Bind(gfx);
-        cube.Draw(gfx);
-        gfx.Present();
-        //RenderFrame();
+        // App update and draw
+        pApp->Update();
+        pApp->Draw();
 
         if (msg.message == WM_QUIT)
         {
             break;
         }
-        angle += 0.001f;
+       
     }
     
 
@@ -147,14 +128,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 
-XMMATRIX GetModelTansformation(float angle)
-{
-    using namespace DirectX;
-    XMMATRIX rotX = XMMatrixRotationX(angle);
-    XMMATRIX rotY = XMMatrixRotationY(angle);
-    XMMATRIX rotZ = XMMatrixRotationZ(angle);
-    return XMMatrixMultiply(rotX, rotY);
-}
 
 
     

@@ -73,7 +73,7 @@ public:
         swapchain->Present(0, 0);
     }
 
-public:
+protected:
     ID3D11Device* GetDevicePtr()
     {
         return dev;
@@ -84,7 +84,7 @@ public:
         return devcon;
     }
 
-
+public:
     ~Graphics()
     {
         swapchain->SetFullscreenState(FALSE, NULL);    // switch to windowed mode
