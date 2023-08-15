@@ -1,20 +1,8 @@
 #pragma once
+#include "Bindable.h"
 #include <tuple>
 
-void SetVertexBuffer(const std::tuple<ID3D11DeviceContext*, int , int , ID3D11Buffer*, UINT , UINT>& data)
-{
-    std::get<0>(data)->IASetVertexBuffers(std::get<1>(data), std::get<2>(data), &std::get<3>(data), &std::get<4>(data), &std::get<5>(data));
-}
 
-void SetIndexBuffer(const std::tuple <ID3D11DeviceContext*, ID3D11Buffer*, DXGI_FORMAT>& data)
-{
-    std::get<0>(data)->IASetIndexBuffer(std::get<1>(data), std::get<2>(data), 0);
-}
-
-void SetTransformBuffer(const std::tuple < ID3D11DeviceContext*, int, int, ID3D11Buffer*>& data)
-{
-    std::get<0>(data)->VSSetConstantBuffers(std::get<1>(data), std::get<2>(data), &std::get<3>(data));
-}
 
 enum BufferType
 {
@@ -22,6 +10,19 @@ enum BufferType
     IndexBuffer,
     TransformBuffer,
 };
+
+
+
+void SetVertexBuffer(const std::tuple<ID3D11DeviceContext*, int, int, ID3D11Buffer*, UINT, UINT>& data);
+
+
+void SetIndexBuffer(const std::tuple <ID3D11DeviceContext*, ID3D11Buffer*, DXGI_FORMAT>& data);
+
+
+void SetTransformBuffer(const std::tuple < ID3D11DeviceContext*, int, int, ID3D11Buffer*>& data);
+
+
+
 
 template <typename... Args>
 struct FunctionPointerHolder {
@@ -41,7 +42,7 @@ template<BufferType> struct Map;
 
 template<> struct Map<TransformBuffer>
 {
-    static constexpr D3D11_BIND_FLAG type= D3D11_BIND_CONSTANT_BUFFER;
+    static constexpr D3D11_BIND_FLAG type = D3D11_BIND_CONSTANT_BUFFER;
 
     static constexpr FunctionPointerHolder<const std::tuple < ID3D11DeviceContext*, int, int, ID3D11Buffer*>&> Bind =
         &SetTransformBuffer;
@@ -52,7 +53,7 @@ template<> struct Map<TransformBuffer>
         return std::make_tuple(context, slot, number, buffPtr);
     }
 
-    
+
 
 };
 
@@ -67,10 +68,10 @@ template<> struct Map<IndexBuffer>
         ID3D11DeviceContext* context, ID3D11Buffer* indBuff, DXGI_FORMAT format) {
         return std::make_tuple(context, indBuff, format);
     }
-    
+
 };
 template<> struct Map<VertexBuffer>
-{ 
+{
     static constexpr FunctionPointerHolder<const std::tuple<ID3D11DeviceContext*, int, int, ID3D11Buffer*, UINT, UINT>&> Bind =
         &SetVertexBuffer;
 
@@ -81,18 +82,17 @@ template<> struct Map<VertexBuffer>
     }
 };
 
-
-
+class Graphics;
 
 template <class T>
 class ConstantBuffer :public Bindable
 {
 public:
-	ConstantBuffer(Graphics& gfx, BufferType bufType, const T* consts, int size, int slot = 0) 
-         :
-        slot{slot},
-        bufType{bufType}
-	{
+    ConstantBuffer(Graphics& gfx, BufferType bufType, const T* consts, int size, int slot = 0)
+        :
+        slot{ slot },
+        bufType{ bufType }
+    {
         D3D11_BIND_FLAG type;
         switch (bufType)
         {
@@ -121,19 +121,23 @@ public:
         cbDesc.MiscFlags = 0;
         cbDesc.StructureByteStride = 0;
 
-        
 
-        GetDevice(gfx)->CreateBuffer(&cbDesc, NULL, &pTranformBuffer);
+
+        HRESULT hr = GetDevice(gfx)->CreateBuffer(&cbDesc, NULL, &pTranformBuffer);
+        if (FAILED(hr)) {
+            throw("you are a loser in buffer");
+        }
 
         // copy the indices in the buffer
         D3D11_MAPPED_SUBRESOURCE msi;
         GetContext(gfx)->Map(pTranformBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &msi);    // map the buffer
         memcpy(msi.pData, consts, sizeof(T) * size);                 // copy the data
         GetContext(gfx)->Unmap(pTranformBuffer, NULL);                                      // unmap the buffer
-        
-       
 
-	}
+
+
+    }
+ 
 
     void Bind(Graphics& gfx) override
     {
@@ -157,11 +161,11 @@ public:
             Map< BufferType::IndexBuffer>::Bind(params);
             break;
         }
-        
-        }
-       
 
-       
+        }
+
+
+
     }
 
     void Update(Graphics& gfx, const T* trans, int size)

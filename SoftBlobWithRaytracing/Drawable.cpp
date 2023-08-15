@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "BIndablesHeader.h"
 
+
 void Drawable::Bind(Graphics& gfx)
 {
     for (auto& b : bindables)
@@ -16,6 +17,10 @@ void Drawable::Draw(Graphics& gfx)
     {
         if (auto p = std::dynamic_pointer_cast<Drawer>(b))
         {
+            if (num_indicies == 0)
+            {
+                throw ("not enough indices(");
+            }
             p->Draw(gfx, num_indicies);
         }
     }

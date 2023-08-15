@@ -10,12 +10,7 @@
 #include <d3dx11.h>
 #include "DirectXMath.h"
 #include "DirectXPackedVector.h"
-#include "Globals.h"
-#include <string>
-#include "HelperFunctions.h"
-#include "Graphics.h"
-#include "BIndablesHeader.h"
-#include "Drawable.h"
+
 #include "App.h"
 
 
