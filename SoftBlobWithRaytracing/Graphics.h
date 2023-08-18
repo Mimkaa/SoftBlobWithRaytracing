@@ -16,8 +16,9 @@ public:
     void ClearScreen(const float* colorBack);
     
     void Present();
+public:
     
-protected:
+
     ID3D11Device* GetDevicePtr();
    
 
@@ -30,4 +31,5 @@ private:
 	ID3D11Device* dev;                     // the pointer to our Direct3D device interface
 	ID3D11DeviceContext* devcon;           // the pointer to our Direct3D device context
     ID3D11RenderTargetView* backbuffer;    // global declaration back buffer
+    ID3D11DepthStencilView* pDSSView;
 };

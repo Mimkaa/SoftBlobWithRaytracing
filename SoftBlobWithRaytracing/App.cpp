@@ -9,7 +9,7 @@ App::App(HWND hWnd, int ScreenWidth, int ScreeHeight)
 {
 	using namespace DirectX;
 
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(1.5f, 4 / 3, 0.1f, 1000);
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(1.5f, 4 / 3, 0.1f, 10);
 	XMStoreFloat4x4(&storedProjection, XMMatrixTranspose(projection));
 	angle = 0.0f;
 }
@@ -22,7 +22,7 @@ void App::Update()
 
 
 	cube1.UpdateMatrices(gfx, storedProjection);
-	cube1.SetPosition({ 0.0f, 0.0f, 3.0f });
+	cube1.SetPosition({ 0.5f, 0.0f, 5.0f });
 	cube1.SetRot({ -angle, -angle, 0.0f });
 	angle += 0.001;
 }
@@ -37,8 +37,12 @@ void App::Draw()
 	cube.Bind(gfx);
 	cube.Draw(gfx);
 
+	
+
 	cube1.Bind(gfx);
 	cube1.Draw(gfx);
+
+
 
 
 	gfx.Present();

@@ -63,7 +63,7 @@ Cube::Cube(Graphics& gfx)
     Transformations def = {};
     tranforms = std::make_shared<ConstantBuffer<Transformations>>(gfx, BufferType::TransformBuffer, &def, sizeof(def) / sizeof(Transformations));
     bindables.push_back(tranforms);
-    int a;
+    
 
 
 
