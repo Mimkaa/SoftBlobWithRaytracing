@@ -176,11 +176,11 @@ public:
         GetContext(gfx)->Unmap(pTranformBuffer, NULL);                                      // unmap the buffer
     }
 
-    /*~ConstantBuffer()
+    ~ConstantBuffer()
     {
         pTranformBuffer->Release();
         
-    }*/
+    }
 
 private:
     ID3D11Buffer* pTranformBuffer;

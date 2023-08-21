@@ -10,6 +10,6 @@ InputLayout::InputLayout(Graphics& gfx, D3D11_INPUT_ELEMENT_DESC* desc_in, int n
 
 void InputLayout::Bind(Graphics & gfx)
 {
-	GetContext(gfx)->IASetInputLayout(pLayout);
+	GetContext(gfx)->IASetInputLayout(pLayout.Get());
 	auto bb = GetDevice(gfx) == nullptr;
 }

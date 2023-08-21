@@ -118,7 +118,10 @@ Graphics::Graphics(HWND hWnd, int ScreenWidth, int ScreeHeight)
     
    
     // Bind the depth stencil view  
-    devcon->OMSetRenderTargets(1, &backbuffer, pDSSView);
+    devcon->OMSetRenderTargets(1, backbuffer.GetAddressOf(), pDSSView.Get());
+
+    pDepthStencil->Release();
+    pDSState->Release();
    
    
 }
@@ -126,8 +129,8 @@ void Graphics::ClearScreen(const float* colorBack)
 {
     // clear the back buffer to a deep blue
     //const float colorBack[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-    devcon->ClearRenderTargetView(backbuffer, colorBack);
-    devcon->ClearDepthStencilView(pDSSView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    devcon->ClearRenderTargetView(backbuffer.Get(), colorBack);
+    devcon->ClearDepthStencilView(pDSSView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
     // switch the back buffer and the front buffer
 
@@ -140,20 +143,12 @@ void Graphics::Present()
 
 ID3D11Device* Graphics::GetDevicePtr()
 {
-    return dev;
+    return dev.Get();
 }
 
 ID3D11DeviceContext* Graphics::GetContextPtr()
 {
-    return devcon;
+    return devcon.Get();
 }
 
 
-Graphics::~Graphics()
-{
-    swapchain->SetFullscreenState(FALSE, NULL);    // switch to windowed mode
-    dev->Release();
-    devcon->Release();
-    swapchain->Release();
-    backbuffer->Release();
-}

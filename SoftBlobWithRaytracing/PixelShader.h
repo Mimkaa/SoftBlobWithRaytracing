@@ -3,6 +3,8 @@
 #include <string>
 class Graphics;
 
+namespace Win = Microsoft::WRL;
+
 class PixelShader : public Bindable
 {
 public:
@@ -17,7 +19,7 @@ public:
 	void Bind(Graphics& gfx);
 	
 private:
-	ID3DBlob* PSBlob;
-	ID3D11PixelShader* pixelShader;
+	Win::ComPtr < ID3DBlob> PSBlob;
+	Win::ComPtr<ID3D11PixelShader> pixelShader;
 	std::string name;
 };

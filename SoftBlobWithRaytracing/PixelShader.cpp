@@ -17,7 +17,7 @@ PixelShader::PixelShader(Graphics& gfx, const std::string filename)
 }
 ID3DBlob* PixelShader::GetBlob()
 {
-	return PSBlob;
+	return PSBlob.Get();
 }
 /*~PixelShader()
 {
@@ -26,6 +26,6 @@ ID3DBlob* PixelShader::GetBlob()
 void PixelShader::Bind(Graphics& gfx)
 {
 
-	GetContext(gfx)->PSSetShader(pixelShader, 0, 0);
+	GetContext(gfx)->PSSetShader(pixelShader.Get(), 0, 0);
 }
 

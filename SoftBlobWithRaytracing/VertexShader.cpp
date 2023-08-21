@@ -20,7 +20,7 @@ VertexShader::VertexShader(Graphics& gfx, const std::string filename)
 }
 ID3DBlob* VertexShader::GetBlob()
 {
-	return VSBlob;
+	return VSBlob.Get();
 }
 /*~VertexShader()
 {
@@ -30,5 +30,5 @@ ID3DBlob* VertexShader::GetBlob()
 void VertexShader::Bind(Graphics& gfx)
 {
 
-	GetContext(gfx)->VSSetShader(vertexShader, 0, 0);
+	GetContext(gfx)->VSSetShader(vertexShader.Get(), 0, 0);
 }

@@ -4,6 +4,8 @@
 
 class Graphics;
 
+namespace Win = Microsoft::WRL;
+
 class VertexShader : public Bindable
 {
 public:
@@ -13,7 +15,7 @@ public:
 	
 	void Bind(Graphics& gfx);
 private:
-	ID3DBlob* VSBlob;
-	ID3D11VertexShader* vertexShader;
+	Win::ComPtr<ID3DBlob> VSBlob;
+	Win::ComPtr<ID3D11VertexShader> vertexShader;
 	std::string name;
 };

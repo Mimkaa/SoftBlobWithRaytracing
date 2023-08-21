@@ -5,6 +5,9 @@
 #include <d3d11.h>
 #include <d3dx11.h>
 #include "DirectXMath.h"
+#include <wrl/client.h>
+
+namespace Win = Microsoft::WRL;
 
 class Graphics
 {
@@ -24,12 +27,11 @@ public:
 
     ID3D11DeviceContext* GetContextPtr();
     
-public:
-    virtual ~Graphics();
+
 private:
-	IDXGISwapChain* swapchain;             // the pointer to the swap chain interface
-	ID3D11Device* dev;                     // the pointer to our Direct3D device interface
-	ID3D11DeviceContext* devcon;           // the pointer to our Direct3D device context
-    ID3D11RenderTargetView* backbuffer;    // global declaration back buffer
-    ID3D11DepthStencilView* pDSSView;
+	Win::ComPtr<IDXGISwapChain> swapchain;             // the pointer to the swap chain interface
+    Win::ComPtr <ID3D11Device> dev;                     // the pointer to our Direct3D device interface
+    Win::ComPtr < ID3D11DeviceContext> devcon;           // the pointer to our Direct3D device context
+    Win::ComPtr < ID3D11RenderTargetView> backbuffer;    // global declaration back buffer
+    Win::ComPtr < ID3D11DepthStencilView> pDSSView;
 };
