@@ -4,6 +4,7 @@
 #include "Globals.h"
 #include "BIndablesHeader.h"
 #include "Cube.h"
+#include "Plain.h"
 
 class App
 {
@@ -21,6 +22,7 @@ private:
 	Graphics gfx;
 	Cube cube;
 	Cube cube1;
+	Plain canvas;
 	float angle;
 	
 	

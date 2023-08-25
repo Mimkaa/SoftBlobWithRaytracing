@@ -5,10 +5,16 @@
 
 void Drawable::Bind(Graphics& gfx)
 {
+    BindAdditional(gfx);
     for (auto& b : bindables)
     {
         b->Bind(gfx);
     }
+}
+
+void Drawable::BindAdditional(Graphics& gfx)
+{
+
 }
 
 void Drawable::Draw(Graphics& gfx)

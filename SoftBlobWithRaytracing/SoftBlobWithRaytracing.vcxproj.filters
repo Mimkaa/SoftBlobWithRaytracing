@@ -69,6 +69,12 @@
     <ClCompile Include="Cube.cpp">
       <Filter>Source Files\Shapes</Filter>
     </ClCompile>
+    <ClCompile Include="Plain.h">
+      <Filter>Header Files\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="Plain.cpp">
+      <Filter>Source Files\Shapes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders.shader" />
@@ -78,6 +84,15 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="PSShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ComputeShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PSTXShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VSTXShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

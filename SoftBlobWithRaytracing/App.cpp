@@ -5,7 +5,8 @@ App::App(HWND hWnd, int ScreenWidth, int ScreeHeight)
 	:
 	gfx{ hWnd, ScreenWidth, ScreeHeight },
 	cube{ gfx },
-	cube1{ gfx }
+	cube1{ gfx },
+	canvas{gfx}
 {
 	using namespace DirectX;
 
@@ -20,11 +21,15 @@ void App::Update()
 	cube.SetPosition({ 0.0f, 0.0f, 5.0f });
 	cube.SetRot({ angle, angle, 0.0f });
 
+	canvas.UpdateMatrices(gfx, storedProjection);
+	canvas.SetPosition({ 0.0f, 0.0f, 2.0f });
 
 	cube1.UpdateMatrices(gfx, storedProjection);
-	cube1.SetPosition({ 0.5f, 0.0f, 5.0f });
+	cube1.SetPosition({ 1.0f, 0.0f, 5.5f });
 	cube1.SetRot({ -angle, -angle, 0.0f });
 	angle += 0.001;
+
+	
 }
 
 void App::Draw()
@@ -34,15 +39,17 @@ void App::Draw()
 	gfx.ClearScreen(colorBack);
 
 
-	cube.Bind(gfx);
+	/*cube.Bind(gfx);
 	cube.Draw(gfx);
 
 	
 
 	cube1.Bind(gfx);
-	cube1.Draw(gfx);
+	cube1.Draw(gfx);*/
 
-
+	canvas.Bind(gfx);
+	canvas.UpdateTexture(gfx);
+	canvas.Draw(gfx);
 
 
 	gfx.Present();
