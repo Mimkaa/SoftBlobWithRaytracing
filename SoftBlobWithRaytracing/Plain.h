@@ -12,6 +12,7 @@ class Plain : public Drawable
 {
 public:
     struct VERTEX { FLOAT X, Y, Z; float color[4]; FLOAT TX, TY; };
+    struct COMPSHADERVARS { DirectX::XMFLOAT4 vars; };
 
     Plain(Graphics& gfx);
 
@@ -39,12 +40,13 @@ private:
     Win::ComPtr<ID3D11ShaderResourceView> shaderResourseView;
     Win::ComPtr<ID3D11UnorderedAccessView> uav;
     // buffer stuff
-    Win::ComPtr<ID3D11Buffer> CSEditBuffer;
+    Win::ComPtr<ID3D11Buffer> CSBuffer;
     Win::ComPtr< ID3D11ShaderResourceView> CSBufferResource;
     Win::ComPtr< ID3D11ComputeShader> computeShader;
 
     Win::ComPtr< ID3D11SamplerState> sampler;
     DirectX::XMFLOAT3 angle;
     DirectX::XMFLOAT3 position;
+    DirectX::XMFLOAT4 compShaderVars;
 
 };

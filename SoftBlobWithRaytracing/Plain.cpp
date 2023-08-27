@@ -1,5 +1,4 @@
 #include "Plain.h"
-
 #include "PixelShader.h"
 #include "Graphics.h"
 #include <string>
@@ -15,8 +14,9 @@ Plain::Plain(Graphics& gfx)
     XMVECTOR zeros = XMVectorZero();
     XMStoreFloat3(&angle, zeros);
     XMStoreFloat3(&position, zeros);
+
     // compute shader stuff
-    
+    InitializeComputeShaderStuff(gfx, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     bindables.push_back(std::make_shared<Drawer>());
 
@@ -96,29 +96,44 @@ void Plain::SetRot(DirectX::XMFLOAT3 angles)
 
 void Plain::BindAdditional(Graphics& gfx)
 {
+   
     // texturing
 
+   
     gfx.GetContextPtr()->PSSetSamplers(0, 1, sampler.GetAddressOf());
-
     gfx.GetContextPtr()->PSSetShaderResources(0, 1, shaderResourseView.GetAddressOf());
 
-    InitializeComputeShaderStuff(gfx, SCREEN_WIDTH, SCREEN_HEIGHT);
+    
 
 
 }
 
 void Plain::UpdateTexture(Graphics& gfx)
 {
+    // increment step
+    compShaderVars.x += 1;
+
+    D3D11_MAPPED_SUBRESOURCE ms;
+    gfx.GetContextPtr()->Map(CSBuffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
+    memcpy(ms.pData, &compShaderVars, sizeof(COMPSHADERVARS) * 1);                 // copy the data
+    gfx.GetContextPtr()->Unmap(CSBuffer.Get(), NULL);                                      // unmap the buffer
+
+
+    ID3D11ShaderResourceView* nullSRV = nullptr;
+    gfx.GetContextPtr()->PSSetShaderResources(0, 1, &nullSRV);
+
     gfx.GetContextPtr()->CSSetShader(computeShader.Get(), nullptr, 0);
+
+    gfx.GetContextPtr()->CSSetShaderResources(0, 1, CSBufferResource.GetAddressOf());
 
     gfx.GetContextPtr()->CSSetUnorderedAccessViews(0, 1, uav.GetAddressOf(), 0);
 
-    gfx.GetContextPtr()->Dispatch(32, 32, 1);
+    gfx.GetContextPtr()->Dispatch(400/16, 400/16, 1);
 
     ID3D11UnorderedAccessView* pNullUAVs = nullptr;
     gfx.GetContextPtr()->CSSetUnorderedAccessViews(0, 1, &pNullUAVs, nullptr);
 
-    
+    BindAdditional(gfx);
 
 
     
@@ -126,9 +141,9 @@ void Plain::UpdateTexture(Graphics& gfx)
 }
 void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Height)
 {
-    D3D11_TEXTURE2D_DESC textureDesc;
-    D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+    D3D11_TEXTURE2D_DESC textureDesc = {};
+    D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc = {};
+    D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc = {};
 
     ///////////////////////// Map's Texture
     // Initialize the  texture description.
@@ -138,7 +153,7 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     // We will have our map be a square
     // We will need to have this texture bound as a render target AND a shader resource
     textureDesc.Width = SCREEN_WIDTH / 2;
-    textureDesc.Height = SCREEN_HEIGHT/ 2;
+    textureDesc.Height = SCREEN_WIDTH / 2;
     textureDesc.MipLevels = 1;
     textureDesc.ArraySize = 1;
     textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -192,40 +207,49 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     // create a structured buffer to pass as a resource for the compute shader
     const int size = SCREEN_WIDTH/2 * SCREEN_HEIGHT/2;
 
+    D3D11_BUFFER_DESC  bufferDescc = {};
+    bufferDescc.ByteWidth = sizeof(DirectX::XMFLOAT4);           // Size of the buffer in bytes
+    bufferDescc.Usage = D3D11_USAGE_DYNAMIC;      // How the buffer will be used
+    bufferDescc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    bufferDescc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;              // CPU access flags
+    bufferDescc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    bufferDescc.StructureByteStride = sizeof(float);
 
-
-    D3D11_BUFFER_DESC bufferDesc = {};
-    bufferDesc.ByteWidth = sizeof(DirectX::XMFLOAT4) * size;
-    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-    bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-    bufferDesc.StructureByteStride = sizeof(DirectX::XMFLOAT4); // Size of each element in the buffer
-
+    HRESULT hrtt = gfx.GetDevicePtr()->CreateBuffer(&bufferDescc, nullptr, &CSBuffer);
+    if (FAILED(hrtt))
+    {
+        throw std::runtime_error("Failed to create buffer. HRESULT: " + std::to_string(hrtt));
+    }
     
 
-    gfx.GetDevicePtr()->CreateBuffer(&bufferDesc, NULL, &CSEditBuffer);
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDescc = {};
+    srvDescc.Format = DXGI_FORMAT_UNKNOWN;
+    srvDescc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+    srvDescc.Buffer.FirstElement = 0;
+    srvDescc.Buffer.NumElements = 1; // Number of elements in the buffer
 
-    // make it into a shader resource
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-    srvDesc.Buffer.ElementOffset = 0;
-    srvDesc.Buffer.ElementWidth = bufferDesc.ByteWidth;
-
-    gfx.GetDevicePtr()->CreateShaderResourceView(CSEditBuffer.Get(), &srvDesc, &CSBufferResource);
-
+   
+    HRESULT hrt = gfx.GetDevicePtr()->CreateShaderResourceView(CSBuffer.Get(), &srvDescc, &CSBufferResource);
+    if (FAILED(hrt))
+    {
+        throw("you are a loser");
+    }
+    
+   
     // sampler
     D3D11_SAMPLER_DESC samplerDesc = {};
     samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
     samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
     samplerDesc.MinLOD = 0;
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-    gfx.GetDevicePtr()->CreateSamplerState(&samplerDesc, &sampler);
-   
+    HRESULT hr = gfx.GetDevicePtr()->CreateSamplerState(&samplerDesc, &sampler);
+    if (FAILED(hr))
+    {
+        throw("ddd");
+    }
 
 }

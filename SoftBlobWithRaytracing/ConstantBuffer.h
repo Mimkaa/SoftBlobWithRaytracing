@@ -119,7 +119,7 @@ public:
         cbDesc.BindFlags = type;
         cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
         cbDesc.MiscFlags = 0;
-        cbDesc.StructureByteStride = 0;
+        cbDesc.StructureByteStride = sizeof(T);
 
 
 

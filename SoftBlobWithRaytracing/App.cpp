@@ -9,8 +9,8 @@ App::App(HWND hWnd, int ScreenWidth, int ScreeHeight)
 	canvas{gfx}
 {
 	using namespace DirectX;
-
-	XMMATRIX projection = XMMatrixPerspectiveFovLH(1.5f, 4 / 3, 0.1f, 10);
+	
+	XMMATRIX projection = XMMatrixPerspectiveFovLH(1.5f, 1.3, 0.1f, 10);
 	XMStoreFloat4x4(&storedProjection, XMMatrixTranspose(projection));
 	angle = 0.0f;
 }
