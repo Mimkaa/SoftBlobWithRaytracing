@@ -6,6 +6,7 @@
 #include "Graphics.h"
 #include "BIndablesHeader.h"
 
+
 namespace Win = Microsoft::WRL;
 
 class Plain : public Drawable
@@ -13,6 +14,7 @@ class Plain : public Drawable
 public:
     struct VERTEX { FLOAT X, Y, Z; float color[4]; FLOAT TX, TY; };
     struct COMPSHADERVARS { DirectX::XMFLOAT4 vars; };
+    struct FLUIDSIMCELL { DirectX::XMFLOAT2 vel; DirectX::XMFLOAT2 dencity; };
 
     Plain(Graphics& gfx);
 
@@ -42,11 +44,26 @@ private:
     // buffer stuff
     Win::ComPtr<ID3D11Buffer> CSBuffer;
     Win::ComPtr< ID3D11ShaderResourceView> CSBufferResource;
-    Win::ComPtr< ID3D11ComputeShader> computeShader;
+
+    // compute Shaders
+    Win::ComPtr<ID3D11ComputeShader> DiffuceShader;
+    Win::ComPtr<ID3D11ComputeShader> AdvectShader;
+    Win::ComPtr<ID3D11ComputeShader> ClearDivergenceShader;
+    Win::ComPtr<ID3D11ComputeShader> FinalFluidShader;
+    Win::ComPtr<ID3D11ComputeShader> SwapBufferShader;
+
+    Win::ComPtr<ID3D11Buffer> CSFluidBuffer;
+    Win::ComPtr<ID3D11UnorderedAccessView> fluidUav;
+    Win::ComPtr<ID3D11Buffer> CSFluidBufferPrev;
+    Win::ComPtr<ID3D11UnorderedAccessView> fluidUavPrev;
+
 
     Win::ComPtr< ID3D11SamplerState> sampler;
     DirectX::XMFLOAT3 angle;
     DirectX::XMFLOAT3 position;
     DirectX::XMFLOAT4 compShaderVars;
+    
+ 
+    
 
 };

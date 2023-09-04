@@ -3,6 +3,7 @@
 #include "Graphics.h"
 #include <string>
 #include "HelperFunctions.h"
+#include "App.h"
 
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 600
@@ -14,6 +15,7 @@ Plain::Plain(Graphics& gfx)
     XMVECTOR zeros = XMVectorZero();
     XMStoreFloat3(&angle, zeros);
     XMStoreFloat3(&position, zeros);
+
 
     // compute shader stuff
     InitializeComputeShaderStuff(gfx, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -60,7 +62,7 @@ Plain::Plain(Graphics& gfx)
     Transformations def = {};
     tranforms = std::make_shared<ConstantBuffer<Transformations>>(gfx, BufferType::TransformBuffer, &def, sizeof(def) / sizeof(Transformations));
     bindables.push_back(tranforms);
-
+   
 
 
 
@@ -112,6 +114,9 @@ void Plain::UpdateTexture(Graphics& gfx)
 {
     // increment step
     compShaderVars.x += 1;
+    compShaderVars.y = float(SCREEN_WIDTH) / 2.0f;
+    compShaderVars.z = float(SCREEN_WIDTH) / 2.0f;
+    auto ii = compShaderVars;
 
     D3D11_MAPPED_SUBRESOURCE ms;
     gfx.GetContextPtr()->Map(CSBuffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
@@ -122,16 +127,43 @@ void Plain::UpdateTexture(Graphics& gfx)
     ID3D11ShaderResourceView* nullSRV = nullptr;
     gfx.GetContextPtr()->PSSetShaderResources(0, 1, &nullSRV);
 
-    gfx.GetContextPtr()->CSSetShader(computeShader.Get(), nullptr, 0);
 
     gfx.GetContextPtr()->CSSetShaderResources(0, 1, CSBufferResource.GetAddressOf());
 
     gfx.GetContextPtr()->CSSetUnorderedAccessViews(0, 1, uav.GetAddressOf(), 0);
 
-    gfx.GetContextPtr()->Dispatch(400/16, 400/16, 1);
+    gfx.GetContextPtr()->CSSetUnorderedAccessViews(1, 1, fluidUav.GetAddressOf(), 0);
+
+    gfx.GetContextPtr()->CSSetUnorderedAccessViews(2, 1, fluidUavPrev.GetAddressOf(), 0);
+
+    // shader chages
+    gfx.GetContextPtr()->CSSetShader(DiffuceShader.Get(), nullptr, 0);
+    for (int i = 0; i < 8; i++)
+    {
+        gfx.GetContextPtr()->Dispatch(400 / 16, 400 / 16, 1);
+    }
+
+    gfx.GetContextPtr()->CSSetShader(AdvectShader.Get(), nullptr, 0);
+    gfx.GetContextPtr()->Dispatch(400 / 16, 400 / 16, 1);
+
+    gfx.GetContextPtr()->CSSetShader(ClearDivergenceShader.Get(), nullptr, 0);
+    for (int i = 0; i < 8; i++)
+    {
+        gfx.GetContextPtr()->Dispatch(400 / 16, 400 / 16, 1);
+    }
+
+    gfx.GetContextPtr()->CSSetShader(FinalFluidShader.Get(), nullptr, 0);
+    gfx.GetContextPtr()->Dispatch(400 / 16, 400 / 16, 1);
+
+    gfx.GetContextPtr()->CSSetShader(SwapBufferShader.Get(), nullptr, 0);
+    gfx.GetContextPtr()->Dispatch(400 / 16, 400 / 16, 1);
 
     ID3D11UnorderedAccessView* pNullUAVs = nullptr;
+
     gfx.GetContextPtr()->CSSetUnorderedAccessViews(0, 1, &pNullUAVs, nullptr);
+    gfx.GetContextPtr()->CSSetUnorderedAccessViews(1, 1, &pNullUAVs, 0);
+    gfx.GetContextPtr()->CSSetUnorderedAccessViews(2, 1, &pNullUAVs, 0);
+    gfx.GetContextPtr()->CSSetShaderResources(0, 1, &nullSRV);
 
     BindAdditional(gfx);
 
@@ -195,16 +227,34 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
 
     gfx.GetDevicePtr()->CreateUnorderedAccessView(texture.Get(), &uavDesc, &uav);
 
-    //load the first compute schader
-    ID3DBlob* shaderBlob = nullptr;
-    D3DX11CompileFromFile(L"ComputeShader.hlsl", 0, 0, "CSMain", "cs_5_0", 0, 0, 0, &shaderBlob, 0, 0);
+    //load the compute shaders
+    ID3DBlob* DiffuceShaderBlob = nullptr;
+    D3DX11CompileFromFile(L"DiffuceOperation.hlsl", 0, 0, "CSMain", "cs_5_0", 0, 0, 0, &DiffuceShaderBlob, 0, 0);
+    gfx.GetDevicePtr()->CreateComputeShader(DiffuceShaderBlob->GetBufferPointer(), DiffuceShaderBlob->GetBufferSize(), nullptr, &DiffuceShader);
 
-    // Create and set the compute shader
-   
-    gfx.GetDevicePtr()->CreateComputeShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, &computeShader);
+    ID3DBlob* AdvectShaderBlob = nullptr;
+    D3DX11CompileFromFile(L"AdvectionOperation.hlsl", 0, 0, "CSMain", "cs_5_0", 0, 0, 0, &AdvectShaderBlob, 0, 0);
+    gfx.GetDevicePtr()->CreateComputeShader(AdvectShaderBlob->GetBufferPointer(), AdvectShaderBlob->GetBufferSize(), nullptr, &AdvectShader);
 
+    ID3DBlob* ClearDivergenceBlob = nullptr;
+    D3DX11CompileFromFile(L"ClearDivergenceOperation.hlsl", 0, 0, "CSMain", "cs_5_0", 0, 0, 0, &ClearDivergenceBlob, 0, 0);
+    gfx.GetDevicePtr()->CreateComputeShader(ClearDivergenceBlob->GetBufferPointer(), ClearDivergenceBlob->GetBufferSize(), nullptr, &ClearDivergenceShader);
 
-    // create a structured buffer to pass as a resource for the compute shader
+    ID3DBlob* FinalFluidShaderBlob = nullptr;
+    D3DX11CompileFromFile(L"FluidFinal.hlsl", 0, 0, "CSMain", "cs_5_0", 0, 0, 0, &FinalFluidShaderBlob, 0, 0);
+    gfx.GetDevicePtr()->CreateComputeShader(FinalFluidShaderBlob->GetBufferPointer(), FinalFluidShaderBlob->GetBufferSize(), nullptr, &FinalFluidShader);
+
+    ID3DBlob* SwapBufferShaderBlob = nullptr;
+    D3DX11CompileFromFile(L"SwapFluidBuffers.hlsl", 0, 0, "CSMain", "cs_5_0", 0, 0, 0, &SwapBufferShaderBlob, 0, 0);
+    gfx.GetDevicePtr()->CreateComputeShader(SwapBufferShaderBlob->GetBufferPointer(), SwapBufferShaderBlob->GetBufferSize(), nullptr, &SwapBufferShader);
+
+    AdvectShaderBlob->Release();
+    ClearDivergenceBlob->Release();
+    FinalFluidShaderBlob->Release();
+    AdvectShaderBlob->Release();
+    SwapBufferShaderBlob->Release();
+
+    // create a structured buffer to pass as a resource for the compute shader (simply variables)
     const int size = SCREEN_WIDTH/2 * SCREEN_HEIGHT/2;
 
     D3D11_BUFFER_DESC  bufferDescc = {};
@@ -213,7 +263,7 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     bufferDescc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     bufferDescc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;              // CPU access flags
     bufferDescc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-    bufferDescc.StructureByteStride = sizeof(float);
+    bufferDescc.StructureByteStride = sizeof(DirectX::XMFLOAT4);
 
     HRESULT hrtt = gfx.GetDevicePtr()->CreateBuffer(&bufferDescc, nullptr, &CSBuffer);
     if (FAILED(hrtt))
@@ -234,7 +284,78 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     {
         throw("you are a loser");
     }
+
+    // create a buffer for a fluid simulation and a shader resource and to pass it to the compute shader
+    D3D11_BUFFER_DESC bbufferDesc = {};
+    bbufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    bbufferDesc.ByteWidth = sizeof(FLUIDSIMCELL) * SCREEN_WIDTH/2 * SCREEN_WIDTH/2;
+    bbufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+    bbufferDesc.CPUAccessFlags = 0;
+    bbufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    bbufferDesc.StructureByteStride = sizeof(FLUIDSIMCELL);
+
+
     
+    HRESULT gg = gfx.GetDevicePtr()->CreateBuffer(&bbufferDesc, NULL, CSFluidBuffer.GetAddressOf());
+
+    if (FAILED(gg))
+    {
+        throw("ddd");
+    }
+    
+
+    D3D11_UNORDERED_ACCESS_VIEW_DESC uavDescc = {};
+    uavDescc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+    uavDescc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDescc.Buffer.NumElements = SCREEN_WIDTH / 2 * SCREEN_WIDTH / 2;
+    uavDescc.Buffer.FirstElement = 0;
+    uavDescc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_COUNTER;
+    
+
+   
+
+    HRESULT hres = gfx.GetDevicePtr()->CreateUnorderedAccessView(CSFluidBuffer.Get(), &uavDescc, &fluidUav);
+    if (FAILED(hres))
+    {
+        throw("ddd");
+    }
+
+    // buffer for the previous values of the fluid sim
+
+    D3D11_BUFFER_DESC bbufferDescPrev = {};
+    bbufferDescPrev.Usage = D3D11_USAGE_DEFAULT;
+    bbufferDescPrev.ByteWidth = sizeof(FLUIDSIMCELL) * SCREEN_WIDTH / 2 * SCREEN_WIDTH / 2;
+    bbufferDescPrev.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+    bbufferDescPrev.CPUAccessFlags = 0;
+    bbufferDescPrev.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    bbufferDescPrev.StructureByteStride = sizeof(FLUIDSIMCELL);
+
+
+
+    HRESULT gfg = gfx.GetDevicePtr()->CreateBuffer(&bbufferDescPrev, NULL, CSFluidBufferPrev.GetAddressOf());
+
+    if (FAILED(gfg))
+    {
+        throw("ddd");
+    }
+
+
+    D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesccPrev = {};
+    uavDesccPrev.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+    uavDesccPrev.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesccPrev.Buffer.NumElements = SCREEN_WIDTH / 2 * SCREEN_WIDTH / 2;
+    uavDesccPrev.Buffer.FirstElement = 0;
+    uavDesccPrev.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_COUNTER;
+
+
+
+
+    HRESULT hrefs = gfx.GetDevicePtr()->CreateUnorderedAccessView(CSFluidBufferPrev.Get(), &uavDesccPrev, &fluidUavPrev);
+    if (FAILED(hrefs))
+    {
+        throw("ddd");
+    }
+
    
     // sampler
     D3D11_SAMPLER_DESC samplerDesc = {};
@@ -251,5 +372,7 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     {
         throw("ddd");
     }
+
+    
 
 }
