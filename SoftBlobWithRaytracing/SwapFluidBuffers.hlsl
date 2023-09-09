@@ -7,6 +7,7 @@ struct FLUIDSIMCELL
 {
     float2 vel;
     float2 denDiv; // desity and divergence
+
 };
 
 RWStructuredBuffer<FLUIDSIMCELL> fluidBuff : register(u1);

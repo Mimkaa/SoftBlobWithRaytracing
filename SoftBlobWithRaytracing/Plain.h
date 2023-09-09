@@ -13,7 +13,7 @@ class Plain : public Drawable
 {
 public:
     struct VERTEX { FLOAT X, Y, Z; float color[4]; FLOAT TX, TY; };
-    struct COMPSHADERVARS { DirectX::XMFLOAT4 vars; };
+    struct COMPSHADERVARS { DirectX::XMFLOAT4 vars; DirectX::XMFLOAT4 lifeTimeVars; };
     struct FLUIDSIMCELL { DirectX::XMFLOAT2 vel; DirectX::XMFLOAT2 dencity; };
 
     Plain(Graphics& gfx);
@@ -30,6 +30,10 @@ public:
 
     void UpdateMatrices(Graphics& gfx, DirectX::XMFLOAT4X4 projection);
 
+    float GetMeanOfDensity(Graphics& gfx);
+
+    ID3D11Texture2D* GiveTexture();
+ 
 
 private:
     std::shared_ptr<ConstantBuffer<Transformations>> tranforms;
@@ -57,11 +61,13 @@ private:
     Win::ComPtr<ID3D11Buffer> CSFluidBufferPrev;
     Win::ComPtr<ID3D11UnorderedAccessView> fluidUavPrev;
 
+  
+
 
     Win::ComPtr< ID3D11SamplerState> sampler;
     DirectX::XMFLOAT3 angle;
     DirectX::XMFLOAT3 position;
-    DirectX::XMFLOAT4 compShaderVars;
+    COMPSHADERVARS compShaderVars;
     
  
     

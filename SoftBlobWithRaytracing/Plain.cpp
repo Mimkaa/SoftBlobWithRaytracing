@@ -1,12 +1,14 @@
 #include "Plain.h"
+#include "App.h"
 #include "PixelShader.h"
 #include "Graphics.h"
 #include <string>
 #include "HelperFunctions.h"
-#include "App.h"
+#include "db_perlin.hpp"
 
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 600
+
 
 Plain::Plain(Graphics& gfx)
 {
@@ -17,6 +19,7 @@ Plain::Plain(Graphics& gfx)
     XMStoreFloat3(&position, zeros);
 
 
+    
     // compute shader stuff
     InitializeComputeShaderStuff(gfx, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -63,8 +66,10 @@ Plain::Plain(Graphics& gfx)
     tranforms = std::make_shared<ConstantBuffer<Transformations>>(gfx, BufferType::TransformBuffer, &def, sizeof(def) / sizeof(Transformations));
     bindables.push_back(tranforms);
    
-
-
+    compShaderVars.lifeTimeVars.y = 0.0f;
+    compShaderVars.lifeTimeVars.x = 0.0f;
+    compShaderVars.vars.x = 0.0f;
+    compShaderVars.lifeTimeVars.w = 0.0f;
 
 
 }
@@ -113,10 +118,40 @@ void Plain::BindAdditional(Graphics& gfx)
 void Plain::UpdateTexture(Graphics& gfx)
 {
     // increment step
-    compShaderVars.x += 1;
-    compShaderVars.y = float(SCREEN_WIDTH) / 2.0f;
-    compShaderVars.z = float(SCREEN_WIDTH) / 2.0f;
-    auto ii = compShaderVars;
+    compShaderVars.vars.x += 1/2000.0f;
+ 
+    
+    
+    compShaderVars.vars.w = float(db::perlin(compShaderVars.vars.x)) * 3.14159265359 * 2 ;
+
+    // get mean of all the densities
+    float meanDen = GetMeanOfDensity(gfx);
+   
+    
+
+    compShaderVars.vars.y = float(SCREEN_WIDTH) / 2.0f;
+    compShaderVars.vars.z = meanDen;
+
+    // life time
+    
+    if (compShaderVars.vars.x - compShaderVars.lifeTimeVars.z > 8.0f & compShaderVars.lifeTimeVars.w == 0.0f)
+    {
+       
+        compShaderVars.lifeTimeVars.z = compShaderVars.vars.x;
+        /*compShaderVars.lifeTimeVars.w += 1;
+        if (compShaderVars.lifeTimeVars.w == 2)
+        {
+            compShaderVars.lifeTimeVars.w = 0.0f;
+        }*/
+        compShaderVars.lifeTimeVars.w = 1;
+    }
+    if (compShaderVars.vars.z < 0.002)
+    {
+
+        compShaderVars.lifeTimeVars.w = 0;
+    }
+    
+    
 
     D3D11_MAPPED_SUBRESOURCE ms;
     gfx.GetContextPtr()->Map(CSBuffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
@@ -258,7 +293,7 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     const int size = SCREEN_WIDTH/2 * SCREEN_HEIGHT/2;
 
     D3D11_BUFFER_DESC  bufferDescc = {};
-    bufferDescc.ByteWidth = sizeof(DirectX::XMFLOAT4);           // Size of the buffer in bytes
+    bufferDescc.ByteWidth = sizeof(COMPSHADERVARS);           // Size of the buffer in bytes
     bufferDescc.Usage = D3D11_USAGE_DYNAMIC;      // How the buffer will be used
     bufferDescc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     bufferDescc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;              // CPU access flags
@@ -276,7 +311,7 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     srvDescc.Format = DXGI_FORMAT_UNKNOWN;
     srvDescc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     srvDescc.Buffer.FirstElement = 0;
-    srvDescc.Buffer.NumElements = 1; // Number of elements in the buffer
+    srvDescc.Buffer.NumElements = 2; // Number of elements in the buffer
 
    
     HRESULT hrt = gfx.GetDevicePtr()->CreateShaderResourceView(CSBuffer.Get(), &srvDescc, &CSBufferResource);
@@ -374,5 +409,51 @@ void Plain::InitializeComputeShaderStuff(Graphics& gfx, float Width, float Heigh
     }
 
     
+    
 
 }
+
+
+float Plain::GetMeanOfDensity(Graphics& gfx)
+{
+    // Create a staging buffer
+    D3D11_BUFFER_DESC stagingBufferDesc;
+    stagingBufferDesc.Usage = D3D11_USAGE_STAGING;
+    stagingBufferDesc.ByteWidth = sizeof(FLUIDSIMCELL) * SCREEN_WIDTH / 2 * SCREEN_WIDTH / 2; // Size of your GPU buffer
+    stagingBufferDesc.BindFlags = 0;
+    stagingBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    stagingBufferDesc.MiscFlags = 0;
+
+    ID3D11Buffer* stagingBuffer;
+    gfx.GetDevicePtr()->CreateBuffer(&stagingBufferDesc, NULL, &stagingBuffer);
+
+    // Copy data from GPU buffer to staging buffer
+    gfx.GetContextPtr()->CopyResource(stagingBuffer, CSFluidBuffer.Get());
+
+    // Map the staging buffer to read its data
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    gfx.GetContextPtr()->Map(stagingBuffer, 0, D3D11_MAP_READ, 0, &mappedResource);
+
+    // Now you can access the data in mappedResource.pData
+    FLUIDSIMCELL* pFloatData = reinterpret_cast<FLUIDSIMCELL*>(mappedResource.pData);
+    float sum = 0.0f;
+    for (int i = 0; i < SCREEN_WIDTH / 2 * SCREEN_WIDTH / 2; i++)
+    {
+        sum += pFloatData[i].dencity.x;
+    }
+    sum /= SCREEN_WIDTH / 2 * SCREEN_WIDTH / 2;
+
+    // Unmap the staging buffer when done
+    gfx.GetContextPtr()->Unmap(stagingBuffer, 0);
+
+    // Don't forget to release the staging buffer when you're done with it
+    stagingBuffer->Release();
+
+    return sum;
+}
+
+ID3D11Texture2D* Plain::GiveTexture()
+{
+    return texture.Get();
+}
+

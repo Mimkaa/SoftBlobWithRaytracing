@@ -7,6 +7,7 @@ struct FLUIDSIMCELL
 {
     float2 vel;
     float2 denDiv; // desity and divergence
+  
 };
 
 RWStructuredBuffer<FLUIDSIMCELL> fluidBuff : register(u1);
@@ -58,7 +59,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
     
     // current dt;
-    float t = inputBuffer[0].x / 2000;
+    float t = inputBuffer[0].x;
     
     CalculateScalars(float2(dispatchThreadID.xy));
     

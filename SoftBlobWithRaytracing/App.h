@@ -3,7 +3,7 @@
 #include "Graphics.h"
 #include "Globals.h"
 #include "BIndablesHeader.h"
-
+#include "Sphere.h"
 #include "Cube.h"
 #include "Plain.h"
 
@@ -25,6 +25,7 @@ private:
 	Cube cube;
 	Cube cube1;
 	Plain canvas;
+	Sphere sphere;
 	float angle;
 	
 	

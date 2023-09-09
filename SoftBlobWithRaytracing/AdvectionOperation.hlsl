@@ -7,6 +7,7 @@ struct FLUIDSIMCELL
 {
     float2 vel;
     float2 denDiv; // desity and divergence
+ 
 };
 
 RWStructuredBuffer<FLUIDSIMCELL> fluidBuff : register(u1);
@@ -15,21 +16,21 @@ float index1D(float2 coord2d, int width)
 {
     if (coord2d.x < 0)
     {
-        coord2d.x = 0;
+        coord2d.x = width - 1;
     }
     else if (coord2d.x > width - 1)
     {
-        coord2d.x = width - 1;
+        coord2d.x = 0;
 
     }
     
     if (coord2d.y < 0)
     {
-        coord2d.y = 0;
+        coord2d.y = width - 1;
     }
     else if (coord2d.y > width - 1)
     {
-        coord2d.y = width - 1;
+        coord2d.y = 0;
 
     }
     return coord2d.x + coord2d.y * width;
@@ -78,6 +79,35 @@ void AdvectDen(float2 cellCoord, float dt)
     fluidBuff[index1D(cellCoord, inputBuffer[0].y)].denDiv.x = centerX;
 }
 
+void ReflectFromBoundaries(float2 cellCoord)
+{
+    if (cellCoord.x == inputBuffer[0].y - 2)
+    {
+        fluidBuff[index1D(cellCoord, inputBuffer[0].y)].vel.x *= -1;
+       
+
+    }
+    else if (cellCoord.x == 2)
+    {
+        fluidBuff[index1D(cellCoord, inputBuffer[0].y)].vel.x *= -1;
+        
+
+    }
+    
+    if (cellCoord.y == inputBuffer[0].y - 2)
+    {
+        fluidBuff[index1D(cellCoord, inputBuffer[0].y)].vel.y *= -1;
+        
+
+    }
+    else if (cellCoord.y == 2)
+    {
+        fluidBuff[index1D(cellCoord, inputBuffer[0].y)].vel.y *= -1;
+        
+
+    }
+
+}
 
 
 [numthreads(16, 16, 1)]
@@ -87,9 +117,12 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
 	
     
     // current dt;
-    float t = inputBuffer[0].x / 2000;
+    float t = inputBuffer[0].x;
 	
     AdvectVel(float2(dispatchThreadID.xy), t);
     AdvectDen(float2(dispatchThreadID.xy), t);
-	
+    ReflectFromBoundaries(float2(dispatchThreadID.xy));
+    
+   
+
 }
