@@ -67,6 +67,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
     if (inputBuffer[0].z < 0.55 & int(inputBuffer[1].w) == 0)
     {
         fluidBuff[index1D(float2(200, 200), inputBuffer[0].y)].denDiv.x = 50.0f;
+        fluidBuff[index1D(float2(200, 200), inputBuffer[0].y)].vel *= 0.0f;
         fluidBuff[index1D(float2(200, 200), inputBuffer[0].y)].vel = rotatedVector;
     }
     else
@@ -77,14 +78,12 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
     
    
     
-    float3 col = palette(t);
-    float sum = (col.x + col.y + col.z) / 3;
-    if (sum < 0.3)
-    {
-        col *= float3(2, 2, 2);
-    }
-    intermediateBuffer[dispatchThreadID.xy] = float4(col* fluidBuff[index1D(float2(dispatchThreadID.xy), inputBuffer[0].y)].denDiv.x, 1.0f);
+   
+    float4 result = float4(palette(t) * fluidBuff[index1D(float2(dispatchThreadID.xy), inputBuffer[0].y)].denDiv.x, fluidBuff[index1D(float2(dispatchThreadID.xy), inputBuffer[0].y)].denDiv.x);
+
     
+    intermediateBuffer[dispatchThreadID.xy] = result;
+   
     float len = length(fluidBuff[index1D(float2(dispatchThreadID.xy), inputBuffer[0].y)].vel);
     if (len > 0.5)
     {

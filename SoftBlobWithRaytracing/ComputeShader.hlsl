@@ -45,7 +45,7 @@ void CSMain(uint3 dispatchThreadID : SV_DispatchThreadID)
         // exponent does the magic here
         float len = length(normalizedTexCoords) * exp(-length(uv0));
     
-        float t = inputBuffer[0] / 2000;
+        float t = inputBuffer[0] / 200;
     
         // another color 
         // because of some reason it emits more blue???

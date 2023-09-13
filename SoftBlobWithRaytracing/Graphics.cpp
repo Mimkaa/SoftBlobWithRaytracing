@@ -21,6 +21,7 @@ Graphics::Graphics(HWND hWnd, int ScreenWidth, int ScreeHeight)
     scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;     // allow full-screen switching
 
     // create a device, device context and swap chain using the information in the scd struct
+    D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
     D3D11CreateDeviceAndSwapChain(NULL,
         D3D_DRIVER_TYPE_HARDWARE,
         NULL,
@@ -31,9 +32,9 @@ Graphics::Graphics(HWND hWnd, int ScreenWidth, int ScreeHeight)
         &scd,
         &swapchain,
         &dev,
-        NULL,
+        featureLevels,
         &devcon);
-
+   
 
     // Set the viewport
     D3D11_VIEWPORT viewport;

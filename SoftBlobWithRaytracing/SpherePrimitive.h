@@ -3,6 +3,9 @@
 #include <DirectXMath.h>
 #define PI 3.14159265358979323846
 
+
+
+
 class SpherePrimitive
 {
 public:
@@ -36,8 +39,11 @@ public:
 				auto normm = dx::XMVectorSubtract(v, center);
 				auto norm = dx::XMVector3Normalize(normm);
 
+				
 				dx::XMStoreFloat3(&vertices.back().pos, v);
 				dx::XMStoreFloat3(&vertices.back().norm, norm);
+
+				
 			}
 		}
 
@@ -45,9 +51,16 @@ public:
 		const auto iNorthPole = (int)vertices.size();
 		vertices.emplace_back();
 		dx::XMStoreFloat3(&vertices.back().pos, base);
+		auto normmNorth = dx::XMVectorSubtract(base, center);
+		auto normNorth = dx::XMVector3Normalize(normmNorth);
+		dx::XMStoreFloat3(&vertices.back().norm, normNorth);
+
 		const auto iSouthPole = (int)vertices.size();
 		vertices.emplace_back();
 		dx::XMStoreFloat3(&vertices.back().pos, dx::XMVectorNegate(base));
+		auto normmSouth = dx::XMVectorSubtract(dx::XMVectorNegate(base), center);
+		auto normSouth = dx::XMVector3Normalize(normmSouth);
+		dx::XMStoreFloat3(&vertices.back().norm, normSouth);
 
 		const auto calcIdx = [latDiv, longDiv](int iLat, int iLong)
 		{ return iLat * longDiv + iLong; };
@@ -71,6 +84,9 @@ public:
 			indices.push_back(calcIdx(iLat + 1, longDiv - 1));
 			indices.push_back(calcIdx(iLat + 1, 0));
 		}
+
+
+		
 
 		// cap fans
 		for (int iLong = 0; iLong < longDiv - 1; iLong++)
@@ -99,6 +115,7 @@ public:
 	template<class V>
 	static IndexedTriangleList<V> Make()
 	{
-		return MakeTesselated<V>(12, 24);
+		int factor = 8;
+		return MakeTesselated<V>(12* factor, 24 * factor);
 	}
 };

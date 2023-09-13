@@ -5,9 +5,9 @@ App::App(HWND hWnd, int ScreenWidth, int ScreeHeight)
 	:
 	gfx{ hWnd, ScreenWidth, ScreeHeight },
 	cube{ gfx },
-	cube1{ gfx },
 	canvas{gfx},
-	sphere{gfx}
+	sphere{gfx},
+	canvasCube{gfx}
 {
 	using namespace DirectX;
 	
@@ -18,20 +18,19 @@ App::App(HWND hWnd, int ScreenWidth, int ScreeHeight)
 
 void App::Update()
 {
+	canvasCube.UpdateMatrices(gfx, storedProjection);
+	canvasCube.SetPosition({ 0.0f, 0.0f, 2.0f });
+
 	cube.UpdateMatrices(gfx, storedProjection);
-	cube.SetPosition({ 0.0f, 0.0f, 5.0f });
-	cube.SetRot({ angle, angle, 0.0f });
+	cube.SetPosition({ 2.0f, 0.0f, 4.0f });
+	cube.SetRot({ -angle, -angle, 0.0f });
 
 	canvas.UpdateMatrices(gfx, storedProjection);
 	canvas.SetPosition({ 0.0f, 0.0f, 2.0f });
 
-	cube1.UpdateMatrices(gfx, storedProjection);
-	cube1.SetPosition({ 1.0f, 0.0f, 5.5f });
-	cube1.SetRot({ -angle, -angle, 0.0f });
-
 	sphere.UpdateMatrices(gfx, storedProjection);
-	sphere.SetPosition({ 3.5f, 0.0f, 5.5f });
-	//sphere.SetRot({ -angle, -angle, 0.0f });
+	sphere.SetPosition({ -2.0f, 0.0f, 4.0f });
+	sphere.SetRot({ -angle, -angle, 0.0f });
 
 	angle += 0.001;
 
@@ -45,18 +44,22 @@ void App::Draw()
 	gfx.ClearScreen(colorBack);
 
 
-	/*cube.Bind(gfx);
+	canvasCube.Bind(gfx);
+	canvasCube.UpdateTexture(gfx);
+	//canvasCube.Draw(gfx);
+
+	cube.Bind(gfx);
+	cube.GetTexture(canvasCube.GiveTexture());
+	cube.ConnectShaderResources(gfx);
 	cube.Draw(gfx);
 
 	
 
-	cube1.Bind(gfx);
-	cube1.Draw(gfx);*/
-
 	canvas.Bind(gfx);
 	canvas.UpdateTexture(gfx);
-	canvas.Draw(gfx);
+	//canvas.Draw(gfx);
 
+	
 
 	sphere.Bind(gfx);
 	sphere.GetTexture(canvas.GiveTexture());

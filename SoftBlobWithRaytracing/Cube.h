@@ -9,7 +9,7 @@
 class Cube : public Drawable
 {
 public:
-	struct VERTEX { FLOAT X, Y, Z; float color[4]; };
+    struct VERTEX { DirectX::XMFLOAT3 pos; DirectX::XMFLOAT3 norm; DirectX::XMFLOAT2 tex; float color[4]; };
 
     Cube(Graphics& gfx);
 
@@ -22,6 +22,10 @@ public:
 
     void UpdateMatrices(Graphics& gfx, DirectX::XMFLOAT4X4 projection);
 
+    void GetTexture(ID3D11Texture2D* texture_in);
+
+    void ConnectShaderResources(Graphics& gfx);
+
    
 private:
     std::shared_ptr<ConstantBuffer<Transformations>> tranforms;
@@ -29,5 +33,8 @@ private:
     std::shared_ptr<ConstantBuffer<VERTEX>> veriticies;
     DirectX::XMFLOAT3 angle;
     DirectX::XMFLOAT3 position;
+    ID3D11Texture2D* texture = nullptr;
+    Win::ComPtr< ID3D11SamplerState> sampler;
+    Win::ComPtr<ID3D11ShaderResourceView> shaderResourseView;
 
 };

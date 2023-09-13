@@ -6,7 +6,7 @@
 #include "Sphere.h"
 #include "Cube.h"
 #include "Plain.h"
-
+#include "PlainCube.h"
 
 class App
 {
@@ -23,8 +23,8 @@ private:
 	DirectX::XMFLOAT4X4 storedProjection;
 	Graphics gfx;
 	Cube cube;
-	Cube cube1;
 	Plain canvas;
+	PlainCube canvasCube;
 	Sphere sphere;
 	float angle;
 	

@@ -9,7 +9,7 @@
 class Sphere : public Drawable
 {
 public:
-    struct VERTEX { DirectX::XMFLOAT3 pos; DirectX::XMFLOAT3 norm; float color[4]; };
+    struct VERTEX { DirectX::XMFLOAT3 pos; DirectX::XMFLOAT3 norm; DirectX::XMFLOAT2 tex; float color[4]; };
 
     Sphere(Graphics& gfx);
 
