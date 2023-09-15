@@ -2,4 +2,4 @@
 #include "DirectXMath.h"
 
 
-struct Transformations { DirectX::XMFLOAT4X4 model; DirectX::XMFLOAT4X4 projection; };
+struct Transformations { DirectX::XMFLOAT4X4 model; DirectX::XMFLOAT4X4 projection; DirectX::XMFLOAT4X4 view; };

@@ -28,7 +28,7 @@ public:
 
     void SetRot(DirectX::XMFLOAT3 angles);
 
-    void UpdateMatrices(Graphics& gfx, DirectX::XMFLOAT4X4 projection);
+    void UpdateMatrices(Graphics& gfx, DirectX::XMFLOAT4X4 projection, DirectX::XMFLOAT4X4 view);
 
     float GetMeanOfDensity(Graphics& gfx);
 

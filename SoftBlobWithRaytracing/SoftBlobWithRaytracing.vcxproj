@@ -296,6 +296,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="Bindable.h" />
     <ClInclude Include="BIndablesHeader.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="db_perlin.hpp" />
     <ClInclude Include="Drawer.h" />

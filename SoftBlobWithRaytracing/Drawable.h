@@ -16,5 +16,5 @@ public:
 protected:
     std::vector<std::shared_ptr<Bindable>> bindables;
     int num_indicies;
-
+    
 };

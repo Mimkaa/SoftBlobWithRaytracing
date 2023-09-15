@@ -4,6 +4,7 @@ cbuffer ConstantBuffer : register(b0)
 {
     float4x4 World;
     float4x4 Proj;
+    float4x4 View;
 };
 
 struct VOut
@@ -19,15 +20,15 @@ VOut VShader(float4 position : POSITION, float3 norm : NORMAL, float2 texx : TEX
 {
     VOut output;
 
-    output.position = mul(mul(position, World), Proj);
+    output.position = mul(mul(mul(position, World), View), Proj);
 
-    output.norm = mul(norm, World);
+    output.norm = mul(mul(norm, World), View);
     
     output.tex = texx;
     
     output.color = color;
     
-    output.positionWPT = mul(position, World);
+    output.positionWPT = mul(mul(position, World), View);
     
     return output;
 }

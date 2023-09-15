@@ -21,6 +21,7 @@ public:
 
 private:
 	DirectX::XMFLOAT4X4 storedProjection;
+	DirectX::XMFLOAT4X4 storedView;
 	Graphics gfx;
 	Cube cube;
 	Plain canvas;

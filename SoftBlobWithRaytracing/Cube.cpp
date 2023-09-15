@@ -107,7 +107,7 @@ Cube::Cube(Graphics& gfx)
 
 
 }
-void Cube::UpdateMatrices(Graphics& gfx, DirectX::XMFLOAT4X4 projection)
+void Cube::UpdateMatrices(Graphics& gfx, DirectX::XMFLOAT4X4 projection, DirectX::XMFLOAT4X4 view)
 {
     using namespace DirectX;
     XMMATRIX translate = XMMatrixTranslationFromVector(XMLoadFloat3(&position));
@@ -118,7 +118,7 @@ void Cube::UpdateMatrices(Graphics& gfx, DirectX::XMFLOAT4X4 projection)
     XMMATRIX model = XMMatrixMultiply(rotation, translate);
     XMFLOAT4X4 storedTranModel;
     XMStoreFloat4x4(&storedTranModel, XMMatrixTranspose(model));
-    Transformations trans{ storedTranModel, projection };
+    Transformations trans{ storedTranModel, projection, view };
     tranforms->Update(gfx, &trans, sizeof(trans) / sizeof(Transformations));
 }
 
