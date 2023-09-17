@@ -152,4 +152,8 @@ ID3D11DeviceContext* Graphics::GetContextPtr()
     return devcon.Get();
 }
 
+ID3D11RenderTargetView* Graphics::GetMainRenderTargerView()
+{
+    return backbuffer.Get();
+}
 

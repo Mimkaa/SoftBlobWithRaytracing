@@ -19,6 +19,9 @@ public:
     void ClearScreen(const float* colorBack);
     
     void Present();
+
+    ID3D11RenderTargetView* GetMainRenderTargerView();
+
 public:
     
 

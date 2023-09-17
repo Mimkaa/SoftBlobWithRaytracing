@@ -1,0 +1,15 @@
+TextureCube CubeMap: register(t0); 
+SamplerState TexSampler : register(s0); 
+
+float4 main(LightingPixelShaderInput input) : SV_Target
+{  
+    float4 cubeTexture = CubeMap.Sample(TexSampler, input.worldNormal);
+
+    //light calculations
+
+    float3 finalColour = (gAmbientColour + diffuseLights) * cubeTexture.rgb +
+                         (specularLights) * cubeTexture.a;
+    
+   
+    return float4(finalColour, 1.0f);
+}

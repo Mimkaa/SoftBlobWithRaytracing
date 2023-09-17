@@ -35,10 +35,10 @@ Cube::Cube(Graphics& gfx)
         { DirectX::XMFLOAT3{ side,side,-side},   {0.0f, 0.0f, -1.0f}, DirectX::XMFLOAT2{ 1.0f, 0.0f}, {0, 1.0f, 0, 1.0f}},//3
 
         // far
-        { DirectX::XMFLOAT3{ -side,-side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 0.0f, 1.0f}, {0, 1.0f, 0, 1.0f}},//4
-        { DirectX::XMFLOAT3{ side,-side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 1.0f, 1.0f}, {0, 1.0f, 0, 1.0f}},//5
-        { DirectX::XMFLOAT3{-side,side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 0.0f, 1.0f}, {0, 1.0f, 0, 1.0f}},//6
-        { DirectX::XMFLOAT3{ side,side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 1.0f, 0.0f}, {0, 1.0f, 0, 1.0f}},//7
+        { DirectX::XMFLOAT3{ -side,-side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 1.0f, 1.0f}, {0, 1.0f, 0, 1.0f}},//4
+        { DirectX::XMFLOAT3{ side,-side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 0.0f, 1.0f}, {0, 1.0f, 0, 1.0f}},//5
+        { DirectX::XMFLOAT3{-side,side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 1.0f, 0.0f}, {0, 1.0f, 0, 1.0f}},//6
+        { DirectX::XMFLOAT3{ side,side,side}, DirectX::XMFLOAT3{0, 0, 1.0f}, DirectX::XMFLOAT2{ 0.0f, 0.0f}, {0, 1.0f, 0, 1.0f}},//7
 
         //// left
         { DirectX::XMFLOAT3{  -side,-side,-side }, DirectX::XMFLOAT3{-1.0f, 0.0f, 0.0f}, DirectX::XMFLOAT2{ 1.0f, 1.0f}, {0, 1.0f, 0, 1.0f}},//8

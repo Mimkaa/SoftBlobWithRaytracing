@@ -86,8 +86,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
         // App update and draw
+        
+        pApp->DrawCubeTexturtes();
+        pApp->ClearScreen();
         pApp->Update();
         pApp->Draw();
+        
 
         if (msg.message == WM_QUIT)
         {

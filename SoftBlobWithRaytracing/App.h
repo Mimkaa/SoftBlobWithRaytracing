@@ -17,7 +17,11 @@ public:
 
 	void Update();
 
+	void DrawCubeTexturtes();
+
 	void Draw();
+
+	void ClearScreen();
 
 private:
 	DirectX::XMFLOAT4X4 storedProjection;
