@@ -1,4 +1,4 @@
-# Cube and A Sphere
+# A Cube and A Sphere
 
 ### One disclaimer must be add : I did not implement a soft body simulation and raytracing in this project, because it would take a lot of time and I needed a working demo, so for now enviromental mappin serves as a raytracer and unfortunatelly the shpere does not deform(but I believe it will, however, a bit later)
 ## Features
